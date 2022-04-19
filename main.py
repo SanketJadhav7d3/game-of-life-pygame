@@ -13,8 +13,8 @@ import pygame
 import numpy as np
 from pygame.locals import *
 
-SCREEN_HEIGHT = 480
-SCREEN_WIDTH = 480
+SCREEN_HEIGHT = 500
+SCREEN_WIDTH = 500
 
 cell_size = 5
 
@@ -33,6 +33,14 @@ def get_info(i, j, cells):
             info += cells[a][b]
     return info
 
+def positionByGrid(grid_size, x, y):
+    '''
+        To get at which position of mouse by grid
+    '''
+    x = x // grid_size
+    y = y // grid_size
+    return x, y 
+
 def update(cells):
     '''
         To update the cells lives
@@ -42,15 +50,18 @@ def update(cells):
         for j in range(cells.shape[1]):
             # underpopulation
             if cells[i][j] == 1 and get_info(i, j, cells) < 2:
-                next_gen[i][j] = 0
+                continue
             # overpopulation
-            if cells[i][j] == 1 and get_info(i, j, cells) > 3:
-                next_gen[i][j] = 0
-            # reproduction
-            if cells[i][j] == 0 and (get_info(i, j, cells) == 2 or get_info(i, j, cells) == 3): 
+            elif cells[i][j] == 1 and get_info(i, j, cells) > 3:
+                continue
+            # any life cell with 2 or 3 neighbours lives on to the next generation
+            elif cells[i][j] == 1 and (get_info(i, j, cells) == 2 or get_info(i, j, cells) == 3): 
                 next_gen[i][j] = 1
-    return next_gen
+            # reproduction
+            elif cells[i][j] == 0 and get_info(i, j, cells) == 3:
+                next_gen[i][j] = 1
 
+    return next_gen
 
 def draw(window, cells_):
     '''
@@ -58,16 +69,18 @@ def draw(window, cells_):
     '''
     for i in range(cells_.shape[0]):
         for j in range(cells_.shape[1]):
-            rectangle = pygame.Rect(i * (cell_size + 1), j * (cell_size + 1), cell_size, cell_size)
+            rectangle = pygame.Rect(i * cell_size, j * cell_size, cell_size - 1, cell_size - 1)
             if cells_[i][j] == 1:
                 pygame.draw.rect(window, (31, 81, 255), rectangle)
             else:
                 pygame.draw.rect(window, (0, 0, 0), rectangle)
 
+
 def main():
-    cells = np.random.randint(2, size=(rows, cols))
+    cells = np.zeros((rows, cols))
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     running = True
+    drawing = False
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -75,11 +88,37 @@ def main():
 
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    running = False 
+                    running = False
 
-        draw(screen, cells)
+                # start the generations
+                if event.key == K_RETURN:
+                    while event.key != K_ESCAPE:
+                        update(cells)
+                        draw(screen, cells)
 
-        cells = update(cells)
+            if event.type == pygame.MOUSEMOTION:
+                if drawing:
+                    # get the curpos of the mouse
+                    cur_pos = pygame.mouse.get_pos()
+                    # get the position of the mouse by grid
+                    x, y = positionByGrid(cell_size, cur_pos[0], cur_pos[1])
+                    # set the cells value alive
+                    cells[x][y] = 1
+                    # convert x and y coordinates to its previous multiple of 5
+                    cur_pos = list(map(lambda x: math.floor(x / 5) * 5, cur_pos))
+                    # draw the rectangle
+                    rectangle = pygame.Rect(cur_pos[0], cur_pos[1], cell_size - 1, cell_size - 1)
+                    pygame.draw.rect(screen, (31, 81, 255), rectangle)
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                drawing = True
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                drawing = False
+
+        if not drawing:
+            draw(screen, cells)
+            cells = update(cells)
 
         pygame.display.update()
 
