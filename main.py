@@ -1,26 +1,27 @@
-#!/Users/sanketjadhav/opt/miniconda3/envs/QuantumProgramming/bin/python
 
 # game of life project
 # Rules
-# Any live cell with fewer than two live neighbours dies, as if by
-# underpopulation. Any live cell with two or three live neighbours lives on to
-# the next generation. Any live cell with more than three live neighbours
+# Any live cell with fewer than two live neighbors dies, as if by
+# underpopulation. Any live cell with two or three live neighbors lives on to
+# the next generation. Any live cell with more than three live neighbors
 # dies, as if by overpopulation. Any dead cell with exactly three live
-# neighbours becomes a live cell by reproduction.
+# neighbors becomes a live cell by reproduction.
 
 import math
 import pygame
 import numpy as np
 from pygame.locals import *
 
-SCREEN_HEIGHT = 500
-SCREEN_WIDTH = 500
+SCREEN_HEIGHT = 700
+SCREEN_WIDTH = 700
 
 cell_size = 5
 
 rows = SCREEN_HEIGHT // cell_size
 cols = SCREEN_WIDTH // cell_size
 
+pygame.font.init()
+font = pygame.font.Font('freesansbold.ttf', 28)
 
 def get_info(i, j, cells):
     info = 0
@@ -54,13 +55,12 @@ def update(cells):
             # overpopulation
             elif cells[i][j] == 1 and get_info(i, j, cells) > 3:
                 continue
-            # any life cell with 2 or 3 neighbours lives on to the next generation
+            # any life cell with 2 or 3 neighbors lives on to the next generation
             elif cells[i][j] == 1 and (get_info(i, j, cells) == 2 or get_info(i, j, cells) == 3): 
                 next_gen[i][j] = 1
             # reproduction
             elif cells[i][j] == 0 and get_info(i, j, cells) == 3:
                 next_gen[i][j] = 1
-
     return next_gen
 
 def draw(window, cells_):
@@ -75,10 +75,20 @@ def draw(window, cells_):
             else:
                 pygame.draw.rect(window, (0, 0, 0), rectangle)
 
+def displayCount(window, cells): 
+    # get the count
+    unique, count = np.unique(cells, return_counts=True)
+    if len(count) == 1: text = "Dead: " + str(count[0]) + " Alive: 0"
+    else: text = "Dead: " + str(count[0]) + "  Alive: " + str(count[1])
+    text = font.render(text, True, (255, 255, 255))
+    textArea = text.get_rect()
+    textArea.center = (SCREEN_WIDTH - 200, SCREEN_HEIGHT- 30)
+    window.blit(text, textArea)
 
 def main():
     cells = np.zeros((rows, cols))
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Game of life")
     running = True
     drawing = False
     while running:
