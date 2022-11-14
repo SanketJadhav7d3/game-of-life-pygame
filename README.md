@@ -1,4 +1,4 @@
 
 # Game of Life using Pygame
 
-<img src="./GameOfLife.png" width="300" height="300"/>
+<center><img src="./GameOfLife.png" width="500" height="500"/></center>
