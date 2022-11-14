@@ -1,3 +1,3 @@
 # Game of Life using Pygame
 
-![Alt text](./GameOfLife.png = 250x250?raw=true "Title")
+![Alt text](./GameOfLife.png ?raw=true "Title" width=100)
